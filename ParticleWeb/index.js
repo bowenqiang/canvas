@@ -1,5 +1,4 @@
 (function(){
-    console.log('main');
     let canvasElement = document.getElementById('canvas');
     let ctx = canvasElement.getContext('2d');
     let mousePos = [0,0];
@@ -10,18 +9,22 @@
     const nodes = [];
     const edges = [];
 
-    let addEdge = ()=>{
+    let addEdge = (edge)=>{
         let ignore = false;
-        edges.forEach(e=>{
-            if(e.from == edge.from && e.to == edge.to || e.to == edge.from && e.from == edge.to){
-                ingore = true;
+
+        edges.forEach( e=>{
+
+            if (e.from == edge.from && e.to == edge.to) {
+                ignore = true;
             }
-            if(!ignore){
-                edges.push(edge);
+            if(e.to == edge.from && e.from == edge.to){
+                ignore = true;
             }
         });
+        if(!ignore){
+            edges.push(edge);
+        }
     }
-
 
     let constructNodes = ()=>{
         for(let i = 0;i<100;i++){
@@ -31,22 +34,24 @@
                 y: Math.random()*canvasElement.height,
                 vx: Math.random()*1-0.5,
                 vy: Math.random()*1-0.5,
-                radius: Math.random()>0.9?3+Math.random()*3:1+Math.random()*3
+                radius: Math.random()>0.9 ? 3 + Math.random()*3 : 1+ Math.random() * 3
             };
             nodes.push(node);
         }
-        nodes.forEach( e=>{
-            nodes.forEach( e2=>{
+        console.log(nodes);
+        nodes.forEach( e =>{
+            nodes.forEach( e2 =>{
                 if(e==e2){
                     return;
                 }
                 var edge = {
                     from:e,
                     to:e2
-                };
+                }
                 addEdge(edge);
             });
         });
+        console.log(edges);
     }
 
     let adjustNodeDrivenByMouse = ()=>{
@@ -55,13 +60,13 @@
     }
 
     let step = ()=>{
-        console.log("step");
         nodes.forEach(e=>{
             if(e.drivenByMouse){
                 return;
             }
             e.x+=e.vx;
             e.y+=e.vy;
+
             let clamp = (min,max,value)=>{
                 if(value>max){
                     return max;
@@ -79,10 +84,11 @@
                 e.vy *=-1;
                 e.y = clamp(0,canvasElement.height,e.y);
             }
-            adjustNodeDrivenByMouse();
-            render();
-            window.requestAnimationFrame(step);
+
         });
+        adjustNodeDrivenByMouse();
+        render();
+        window.requestAnimationFrame(step);
     }
 
     let lengthOfEdge = (edge)=>{
@@ -100,14 +106,15 @@
                 return;
             }
             ctx.strokeStyle = edgeColor;
-            ctx.lineWidth = (1.0-l/threshold)*0.25;
-            ctx.globalApha = 1.0 - l/threshold;
+            ctx.lineWidth = (1.0-length/threshold)*2.5;
+            ctx.globalApha = 1.0 - length/threshold;
             ctx.beginPath();
             ctx.moveTo(e.from.x,e.from.y);
             ctx.lineTo(e.to.x,e.to.y);
             ctx.stroke();
         });
         ctx.globalApha = 1.0;
+        
         nodes.forEach(e=>{
             if(e.drivenByMouse){
                 return;
@@ -115,13 +122,14 @@
             ctx.fillStyle = nodeColor;
             ctx.beginPath();
             ctx.arc(e.x,e.y,e.radius,0,2 * Math.PI);
+            ctx.fill();
         });
 
     }
 
     window.onresize = function(){
         canvasElement.width = document.body.clientWidth;
-        canvasElement.height = document.body.clientHeight;
+        canvasElement.height = canvasElement.clientHeight;
         if(nodes.length == 0){
             constructNodes();
         }
@@ -130,6 +138,7 @@
     }
     window.onmousemove = function(e){
         mousePos = [e.clientX,e.clientY];
+        console.log(mousePos);
     }
 
     window.onresize();
